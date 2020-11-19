@@ -83,14 +83,14 @@ WSGI_APPLICATION = 'trader1.wsgi.application'
 
 DATABASES = {
   'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        # 'ENGINE': 'django.db.backends.mysql',
-        # 'NAME': 'trader1',
-        # 'HOST': '127.0.0.1',
-        # 'USER': 'root',
-        # 'PASSWORD': 'Uspeha112010$',
-        # 'PORT': '3306'
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'trader1',
+        'HOST': '127.0.0.1',
+        'USER': 'root',
+        'PASSWORD': 'Uspeha112010$',
+        'PORT': '3306'
     }
 }
 

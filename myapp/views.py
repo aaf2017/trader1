@@ -40,21 +40,28 @@ def getStockInfo( request, symbol):
 
 @login_required
 def home( request):
-    if request.user.is_authenticated:
-        try:
-            account = Account.objects.get(user=request.user)
-            stocks = Stock.objects.filter(account=account).order_by('-created').all()
-            stock_symbols = stocks.values_list('symbol', 'quantity')
-            account_value = sum([yf.Ticker(stock[0]).info["ask"]*stock[1] for stock in stock_symbols])
-        except Account.DoesNotExist:
-            account = None
-            stocks = None
-        return render( request, 'myapp/home.html', {'account': account, 'stocks': stocks[:5], 'stock_count': len(stocks) if stocks else 0, 'account_value': account_value + account.balance})
-    return render(request, "myapp/home.html", {})
+    try:
+        account = Account.objects.get(user=request.user)
+        stocks = Stock.objects.filter(account=account).order_by('-created').all()
+        stock_symbols = stocks.values_list('symbol', 'quantity')
+        account_value = sum([yf.Ticker(stock[0]).info["ask"]*stock[1] for stock in stock_symbols])
+    except Account.DoesNotExist:
+        account = None
+        stocks = None
+        
+    context = {
+        'account': account,
+        'stocks': stocks[:5],
+        'stock_count': len(stocks) if stocks else 0,
+        'account_value': account_value + account.balance,
+    }
+        
+    return render( request, 'myapp/home.html', context)
     
-def explore( request):
-    return render( request, 'myapp/explore.html', {})
+def explore(request):
+    return render(request, 'myapp/explore.html', {})
 
+@login_required
 @csrf_exempt
 def trade( request):
     if request.user.is_authenticated:
@@ -83,6 +90,7 @@ def trade( request):
             pass
     return render( request, 'myapp/trade.html', {"account": account})
 
+@login_required
 @csrf_exempt
 def buy_stocks( request):
     data = json.loads(request.body)
@@ -96,8 +104,10 @@ def buy_stocks( request):
         # update the balance 
         ret = {k:v for k,v in stock.__dict__.items() if k not in ["_state", "created", "last_modified"]}
         return JsonResponse(ret, status=200)
-    return False 
+    if account.balance < data["quantity"]*data["ask"]:
+        return 
 
+@login_required
 def portfolio( request):
     try:
         account = Account.objects.get(user=request.user)
@@ -136,11 +146,7 @@ def getPrice(request):
     print('getPrice3')
     return JsonResponse(retval)
 
-"""
-
-USER AUTHENTIFICATION - LOGIN/LOGOUT
-
-"""
+# USER AUTHENTIFICATION - LOGIN/LOGOUT
 
 def login_user( request):
     if request.method == 'POST':
@@ -164,11 +170,8 @@ def logout_user(request):
     return redirect('home')
 
 
-"""
 
-USER REGISTRATION/SIGNUP FORM
-
-"""
+# USER REGISTRATION/SIGNUP FORM
 
 def register_user(request):
     if request.method == 'POST':
@@ -188,12 +191,11 @@ def register_user(request):
     context = {'form': form}
     return render( request, 'myapp/register.html', context)
     
-    """
     
-    EDIT USER PROFILE/CHANGE PASSWORD
+    #EDIT USER PROFILE/CHANGE PASSWORD
     
-    """
-    
+   
+@login_required   
 def edit_profile(request):
     if request.method == 'POST':
         form = EditProfileForm(request.POST, instance=request.user)
@@ -207,6 +209,7 @@ def edit_profile(request):
     context = {'form': form}
     return render( request, 'myapp/edit_profile.html', context)
 
+@login_required
 def change_password(request):
     if request.method == 'POST':
         form = PasswordChangeForm(data=request.POST, user=request.user)

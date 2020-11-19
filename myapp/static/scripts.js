@@ -38,7 +38,7 @@ $(document).ready( () => {
   var stock_data = {{ stock_quote | safe }}
   console.log(145);
   $("#quantity-input").on("change", function(evt){
-    console.log(1234)
+    console.log(1234);
     const value = evt.target.value;
     const cost = stock_data && stock_data.ask ? value*1 + stock_data.ask : 0;
     $("#total-price-input").value(cost);
