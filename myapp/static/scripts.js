@@ -44,4 +44,4 @@ $(document).ready( () => {
     $("#total-price-input").value(cost);
   });
 
-</script>
+</script> 
