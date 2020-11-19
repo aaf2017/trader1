@@ -1,23 +1,25 @@
 import json
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate, login, logout #ADD, update_session_auth_hash /plus UPDATE def change_password IF DON'T WANT TO BE LOGGED OUT AFTER CHANGING PASSWORD/
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
-from . import models
-from django.contrib import messages
-from .models import Quote
-from .forms import QuoteForm, SignUpForm, EditProfileForm
-import yfinance as yf
-from pandas_datareader import data
-from pandas_datareader._utils import RemoteDataError
 import matplotlib.pyplot as plt
+import yfinance as yf
 import pandas as pd
 import numpy as np
-from datetime import datetime
-from django.conf import settings
 import os
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout #ADD, update_session_auth_hash /plus UPDATE def change_password IF DON'T WANT TO BE LOGGED OUT AFTER CHANGING PASSWORD/
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from datetime import datetime
+
+from pandas_datareader import data
+from pandas_datareader._utils import RemoteDataError
+
+from .models import Quote, Stock, Account
+from .forms import QuoteForm, SignUpForm, EditProfileForm
 
 def getInfo( symbol):
     STARTDATE = '2014-01-01'
@@ -36,14 +38,15 @@ def getStockInfo( request, symbol):
     #getInfo( symbol)
     return JsonResponse({"symbol": symbol })
 
+@login_required
 def home( request):
     if request.user.is_authenticated:
         try:
-            account = models.Account.objects.get(user=request.user)
-            stocks = models.Stock.objects.filter(account=account).order_by('-created').all()
+            account = Account.objects.get(user=request.user)
+            stocks = Stock.objects.filter(account=account).order_by('-created').all()
             stock_symbols = stocks.values_list('symbol', 'quantity')
             account_value = sum([yf.Ticker(stock[0]).info["ask"]*stock[1] for stock in stock_symbols])
-        except models.Account.DoesNotExist:
+        except Account.DoesNotExist:
             account = None
             stocks = None
         return render( request, 'myapp/home.html', {'account': account, 'stocks': stocks[:5], 'stock_count': len(stocks) if stocks else 0, 'account_value': account_value + account.balance})
@@ -55,7 +58,7 @@ def explore( request):
 @csrf_exempt
 def trade( request):
     if request.user.is_authenticated:
-        account = models.Account.objects.get(user=request.user)
+        account = Account.objects.get(user=request.user)
     if request.method == 'POST':
         if request.POST.get('action') == "search":
             symbol = request.POST.get("symbol")
@@ -83,13 +86,13 @@ def trade( request):
 @csrf_exempt
 def buy_stocks( request):
     data = json.loads(request.body)
-    account = models.Account.objects.get(user=request.user)
+    account = Account.objects.get(user=request.user)
     print(data["quantity"])
     if account.balance > data["quantity"]*data["ask"]:    
         company_name = yf.Ticker(data["symbol"]).info["longName"]
         params = dict(symbol=data["symbol"], quantity=data['quantity'], purchase_price=data["ask"], account=account, company_name=company_name)
         # make sure that the stock doesn't exist (by symbol and purchase price) and if it does just update the quantity
-        stock = models.Stock.objects.create(**params)
+        stock = Stock.objects.create(**params)
         # update the balance 
         ret = {k:v for k,v in stock.__dict__.items() if k not in ["_state", "created", "last_modified"]}
         return JsonResponse(ret, status=200)
@@ -97,11 +100,11 @@ def buy_stocks( request):
 
 def portfolio( request):
     try:
-        account = models.Account.objects.get(user=request.user)
-        stocks = models.Stock.objects.filter(account=account).order_by('symbol').all()
+        account = Account.objects.get(user=request.user)
+        stocks = Stock.objects.filter(account=account).order_by('symbol').all()
         stock_symbols = stocks.values_list('symbol', flat=True)
         stock_quotes = [yf.Ticker(symbol).info for symbol in stock_symbols]
-    except models.Account.DoesNotExist:
+    except Account.DoesNotExist:
         account = None
         stocks = None     
     return render(request, 'myapp/portfolio.html', {'account': account, 'stocks': stocks, 'stock_count': len(stocks) if stocks else 0})
@@ -175,7 +178,7 @@ def register_user(request):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password1']
             user = authenticate(username=username, password=password)
-            models.Account.objects.create(user=user, balance=1000)
+            Account.objects.create(user=user, balance=1000)
             login(request, user)
             messages.success(request, ('You have successfully completed your registration!'))
             return redirect('home')

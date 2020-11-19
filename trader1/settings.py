@@ -138,10 +138,19 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join( BASE_DIR, 'media')
 ##STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-#LOGIN_USER_REDIRECT_URL = '/login/'
-#LOGIN_USER_URL = '/login/'
-#LOGIN_USER_EXEMPT_URLS = (
-  #  '/logout/',
-  #  '/register/'
-#)
+
+# Custom Authentication
+
+LOGIN_URL = 'login'
+
+LOGIN_REDIRECT_URL = '/'
+
+# LOGIN_USER_REDIRECT_URL = '/login/'
+
+# LOGIN_USER_URL = '/login/'
+
+# LOGIN_USER_EXEMPT_URLS = (
+#    '/logout/',
+#    '/register/'
+# )
 
