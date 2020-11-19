@@ -1,0 +1,39 @@
+{% extends 'myapp/base.html' %}
+
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/edit_profile.css' %}">
+
+<h3 class="text-center">Edit Profile</h3>
+<br/>
+
+    <div class="col-md-6 offset-md-3">
+            <form method="POST" action="{% url 'edit_profile' %}">
+                {% csrf_token %}
+
+                {% if form.errors %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        <p>Your attempted submission has errors:</p>
+
+                        {% for field in form %}
+                            {% if field.errors %}
+                                {{ field.errors }}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                {% endif %}
+
+                {{ form.as_p }}
+
+                <div class="text-center"><input type="submit" value="Edit Profile" class="btn btn-dark btn-lg text-center"></div>
+            </form>
+            <br/>
+            <p class="text-center"><small>To Change Your Password <a href="{% url 'change_password' %}">Click Here</a></small></p>
+    </div>
+
+
+{% endblock %}

@@ -1,0 +1,17 @@
+* {
+    padding: 0;
+    box-sizing: border-box;
+    margin: 0;
+  }
+
+  body {
+    background-color: #f2eee3;
+  }
+
+  h3 {
+    text-decoration: overline #79d70f;
+    letter-spacing: 2px;
+    line-height: 4;
+    margin-top: 90px;
+    font-weight: 700;
+}

@@ -1,0 +1,95 @@
+{% extends 'myapp/base.html' %}
+
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/explore.css' %}">
+
+<html>
+<head>
+<script
+    src="https://code.jquery.com/jquery-3.5.1.min.js"
+    integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+    crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+<div class="text-center">
+<h1>Explore Your Stock Options</h1>
+<br/>
+
+<!--TWO COLUMN GRID -->
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+                    <form action="explore" method="POST">
+                    {% csrf_token %}
+                    <div class="form-inline">
+                        
+                        <div class="col-sm-12">
+                        <input type="text" name="symbol" class="form-control mr-sm-4" id="colFormLabel" placeholder="Enter Ticker">
+                        <input type="hidden" name="action" value="search">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" value="search">Search</button>
+                        </div>
+                    </div>
+                    </form>
+                <br/>
+            <div><button id="showfb">Show Image FB</button></div>
+            <div><button id="showmsft">Show Image MSFT</button></div>
+        </div>
+        <div class="col">
+        2 of 2
+        </div>
+    </div>
+</div>
+
+<!--{% load static %}
+<img src="{% static 'my_plot.png' %}" />-->
+
+
+<!--{% load static %}
+<script src="{% static 'scripts.js' %}"></script>-->
+<script>
+
+function getCookie(c_name)
+{
+    if (document.cookie.length > 0)
+    {
+        c_start = document.cookie.indexOf(c_name + "=");
+        if (c_start != -1)
+        {
+            c_start = c_start + c_name.length + 1;
+            c_end = document.cookie.indexOf(";", c_start);
+            if (c_end == -1) c_end = document.cookie.length;
+            return unescape(document.cookie.substring(c_start,c_end));
+        }
+    }
+    return "";
+}
+$(document).ready( () => {
+    console.log('ready');
+    $.ajaxSetup({
+        headers: { "X-CSRFToken": getCookie("csrftoken") }
+    });
+    $('#showfb').click( () => {
+        console.log('inside showfb')
+        var url = "/getStockInfo/FB"
+        $.ajax( {
+            type: "GET"
+            url: url,
+            success: function( data) {
+                alert("retrieve data = "+JASON.stringify(data))
+            }
+        })
+    })
+});
+
+</script>
+
+
+</div>
+</body>
+</html>
+
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'myapp/base.html' %}
+
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+
+
+<html>
+<body id="imgBg" style="background-image: url({% static 'stocks.jpg'%})" alt="Stock Data Background">
+
+<div class="inner text-center">
+
+<h1>STOCK PORTFOLIO MANAGER</h1>
+
+{% if user.is_authenticated %}
+    <!--<p>Username: {{ user.username }}</p>-->
+    
+    <h2>Welcome, {{ user.first_name }} !</h2>
+
+    <table class="table table-lg table-dark col-md-6 offset-md-3">
+  <thead>
+    <tr>
+      <th scope="col" colspan="2"><h4>ACCOUNT SUMMARY</h4></th>    
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><h5>Cash Balance:</h5></td>
+      <td><h5>{{account.balance}}</h5></td>
+    </tr>
+    <tr>
+      <td><h5>Equity:</h5></td>
+      <td><h5>{{account_value}}</h5></td>
+    </tr>
+    <tr>
+      <td><h5>Total Shares:</h5></td>
+      <td><h5>{{stock_count}}</h5></td>
+    </tr>
+    <tr>
+      <td><h5>Recent Activity:</h5></td>
+      <td><h5>{% for stock in stocks %}
+            {{stock}}
+          {% endfor %}</h5>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    
+    <!--<h4>Cash Balance: {{account.balance}}</h4>
+    <h4>Equity: {{account_value}}</h4>
+    <h4>Total Shares: {{ stock_count }}</h4>
+    <hr><br>
+    <h5>Recent Activity:</h5>
+    {% for stock in stocks %}
+        <h6>{{stock}}</h6>
+    {% endfor %}-->
+          <!--{{ user.last_name }}-->
+    <!--<p>Last Name: {{ user.last_name }}</p>-->
+    <!--<p>Email: {{ user.email }}</p>--> 
+
+{% endif %}
+</div>
+
+</body>
+</html>
+{% endblock %}
