@@ -5,167 +5,204 @@
 <link rel="stylesheet" href="{% static 'css/trade.css' %}">
 
 
+
+  <div class="inner text-center">
+    <h2>TRADE</h2>
+  </div>
+  <br/>
+
 <div class="text-center">
+  <div class="row">
 
-  <h1>TRADE STOCKS</h1>
-  <br/>
+  <!--LEFT SIDE-->
+    <div class="col-md-6">
 
-  <h4>Balance: {{ account.balance }} USD</h4>
-  <br/>
-    <form action="trade" method="POST">
-      {% csrf_token %} <!--added/look at views.py/def trader-->
-      <div class="form-inline">
-        
-        <div class="col-sm-12">
-          <input type="text" name="symbol" class="form-control mr-sm-4" id="colFormLabel" placeholder="Enter Ticker">
-          <input type="hidden" name="action" value="search">
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit" value="search">Search</button>
-        </div>
+      <div class="row">
+        <form action="trade" method="POST" class="col-md-8">
+          {% csrf_token %} <!--added in views.py/def trader-->
+          <div class="form-inline">
+            <input type="text" name="symbol" class="form-control col-md-6 offset-md-1" id="colFormLabel" placeholder="Enter Ticker">
+            <input type="hidden" name="action" value="search">
+            <button class="btn btn-outline-success col-md-2" type="submit" value="search" id="searchTicker">Search</button>
+          </div>
+        </form>
       </div>
-    </form>
-  <br/>
-  <br/>
+      <br/>
 
-  {% if stock_quote.symbol %}
-      <h3>{{ stock_quote.symbol }}</h3>
-  {% else %}
-      <h3>Ticker: n/a</h3>
-  {% endif %}
+    <div class="container">     
+      <div class="col-md-6">                      
+        <input type="text" name="total" class="form-control mr-sm-4" id="total-price-input" placeholder="$ Total Price" disabled>          
+      </div>   
+      <br/>
 
-  {% if stock_quote %}
-    <table class="table table-striped table-responsive">
-      <thead>
-        <tr>
-          <th scope="col">Ticker</th>
-          <th scope="col">Previous Close</th>
-          <th scope="col">Open</th>
-          <th scope="col">Bid</th>
-          <th scope="col">Ask</th>
-          <th scope="col">52wkHigh</th>
-          <th scope="col">52wkLow</th>
-          <th scope="col">52wk Change</th>
-          <th scope="col">Volume</th>
-          <th scope="col">Reg.Market Price</th>
-          <th scope="col">Share Outstanding</th>
-          <th scope="col">Ex-Dividend Date</th>
-          <th scope="col">Divident Yield</th>
-        </tr>
-      </thead>
-      <tbody>
-
-      
-        <tr>
-          <td>{{ stock_quote.symbol }}</td>
-          <td>{{ stock_quote.previousClose }}</td>
-          <td>{{ stock_quote.open }}</td>
-          <td>{{ stock_quote.bid }}</td>
-          <td>{{ stock_quote.ask }}</td>
-          <td>{{ stock_quote.fiftyTwoWeekHigh }}</td>
-          <td>{{ stock_quote.fiftyTwoWeekLow }}</td>
-          <td>{{ stock_quote.fiftyTwoWeekChange }}</td>
-          <td>{{ stock_quote.volume }}</td>
-          <td>{{ stock_quote.regularMarketPrice }}</td>
-          <td>{{ stock_quote.sharesOutstanding }}</td>
-          {% if stock_quote.exDividendDate %}
-            <td>{{ stock_quote.exDividendDate }}</td>
-          {% else %}
-            <td>N/A</td>
-          {% endif %}
-          {% if stock_quote.dividendYield %}
-            <td>{{ stock_quote.dividendYield }}</td>
-          {% else %}
-            <td>N/A</td>
-          {% endif %}
-
-        </tr>
-      {% for stock_quote in symbol %}
-      {% endfor %}
-      </tbody>
-    </table>
-{% else %}
-  <table class="table table-striped table-responsive">
-      <thead>
-        <tr>
-          <th scope="col">Ticker</th>
-          <th scope="col">Previous Close</th>
-          <th scope="col">Open</th>
-          <th scope="col">Bid</th>
-          <th scope="col">Ask</th>
-          <th scope="col">52wkHigh</th>
-          <th scope="col">52wkLow</th>
-          <th scope="col">52wk Change</th>
-          <th scope="col">Volume</th>
-          <th scope="col">Reg.Market Price</th>
-          <th scope="col">Share Outstanding</th>
-          <th scope="col">Ex-Dividend Date</th>
-          <th scope="col">Divident Yield</th>
-        </tr>
-      </thead>
-      <tbody>
-
-      
-        <tr>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-         
-        </tr>
-      </tbody>
-    </table>
+      <div class="form-inline col-md-6">
+        <input type="text" name="quantity" class="form-control mr-sm-3" id="quantity-input" placeholder="Enter Quantity">
+        <!--<input type="text" name="quantity" class="form-control col-md-6 offset-md-1" placeholder="Quantity">-->
+        <button class="btn btn-danger col-md-4" type="submit" id="buy-submit-button" aria-haspopup="true" aria-expanded="false">Buy</button>
+      </div>
+    </div>
     <br/>
-    
+
+     <h5 id="buy-message"></h5>
 
 
-{% endif %}
-
-
-
-  <form action="trade" method="POST">
-        
-      <div class="container">
-        </br>
-        <div class="col-3 offset-9">
-         
-            
-            <input type="text" name="total" class="form-control mr-sm-4" id="total-price-input" placeholder="$ Total Price" disabled> 
-         
-        </div>
-        <br/>
-
-        <div class="col-3 offset-9">
-         
-            <input type="text" name="quantity" class="form-control mr-sm-4" id="quantity-input" placeholder="Enter Quantity">
-          
-        </div>
-        <br/>
-
-        <div class="col-1 offset-11">
-            <button class="btn btn-lg btn-primary btn-danger" type="button" id="buy-submit-button" aria-haspopup="true" aria-expanded="false">
-                Buy
-            </button>
+      <div class="row">
+        <div class="col-md-12">
+        {% if stock_quote.symbol %}
+          <h3>{{ stock_quote.symbol }}</h3>
+        {% else %}
+          <h4 class="text-center">Ticker: n/a</h4>
+        {% endif %}
         </div>
         
-
       </div>
+      <div class="row">
+      {% if stock_quote %}
+        <table class="table table-striped table-responsive">
+          <thead>
+            <tr>
+              <th scope="col">Ticker</th>
+              <th scope="col">Previous Close</th>
+              <th scope="col">Open</th>
+              <th scope="col">Bid</th>
+              <th scope="col">Ask</th>
+              <th scope="col">52wkHigh</th>
+              <th scope="col">52wkLow</th>
+              <th scope="col">52wk Change</th>
+              <th scope="col">Volume</th>
+              <th scope="col">Reg.Market Price</th>
+              <th scope="col">Share Outstanding</th>
+              <th scope="col">Ex-Dividend Date</th>
+              <th scope="col">Divident Yield</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ stock_quote.symbol }}</td>
+              <td>{{ stock_quote.previousClose }}</td>
+              <td>{{ stock_quote.open }}</td>
+              <td>{{ stock_quote.bid }}</td>
+              <td>{{ stock_quote.ask }}</td>
+              <td>{{ stock_quote.fiftyTwoWeekHigh }}</td>
+              <td>{{ stock_quote.fiftyTwoWeekLow }}</td>
+              <td>{{ stock_quote.fiftyTwoWeekChange }}</td>
+              <td>{{ stock_quote.volume }}</td>
+              <td>{{ stock_quote.regularMarketPrice }}</td>
+              <td>{{ stock_quote.sharesOutstanding }}</td>
+              {% if stock_quote.exDividendDate %}
+                <td>{{ stock_quote.exDividendDate }}</td>
+              {% else %}
+                <td>N/A</td>
+              {% endif %}
+              {% if stock_quote.dividendYield %}
+                <td>{{ stock_quote.dividendYield }}</td>
+              {% else %}
+                <td>N/A</td>
+              {% endif %}
 
-  </form>
-  <br/>
+            </tr>
+          {% for stock_quote in symbol %}
+          {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <table class="table table-striped table-responsive">
+          <thead>
+            <tr>
+              <th scope="col">Ticker</th>
+              <th scope="col">Previous Close</th>
+              <th scope="col">Open</th>
+              <th scope="col">Bid</th>
+              <th scope="col">Ask</th>
+              <th scope="col">52wkHigh</th>
+              <th scope="col">52wkLow</th>
+              <th scope="col">52wk Change</th>
+              <th scope="col">Volume</th>
+              <th scope="col">Reg.Market Price</th>
+              <th scope="col">Share Outstanding</th>
+              <th scope="col">Ex-Dividend Date</th>
+              <th scope="col">Divident Yield</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      {% endif %}
+      </div>
+      {% if image %}
+      <div class="row">
+        <img src="data:image/png;base64,{{ image }}" alt="" height="400", width="700">
+      </div>
+      {% endif %}
+    </div>
+
+    <!--RIGHT SIDE-->
+    <div class="col-md-6">
+      <h4>Portfolio</h4>
+      <form action="trade" method="POST">
+        {% csrf_token %} <!--added/look at views.py/def trader-->
+        <table class="table table-striped col-md-12">
+          <thead>
+            <tr>
+              <th scope="col">Ticker</th>
+              <th scope="col">Company Name</th>
+              <th scope="col">Quantity</th>
+              <th scope="col">Value</th>
+              <th scope="col">Sell</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for stock in stocks %}
+              <tr>
+                <td>{{ stock.symbol }}</td>
+                <td>{{ stock.company_name }}</td>
+                <td>{{ stock.quantity }}</td>
+                <td>{{ stock.value }}</td>
+                <td><input type="radio" name="stock" value="{{stock.symbol}}"></td>
+              </tr>
+            {% endfor %}
+            <tr>
+              <td>Cash</td>
+              <td></td>
+              <td></td>
+              <td>{{ account.balance }}</td>
+              <td></td>
+          </tbody>
+        </table>
+        <div class="form-inline col-md-12">
+          <input type="hidden" name="action" value="sell">
+          <input type="text" name="quantity" class="form-control col-md-6" id="quantitySell" placeholder="Quantity">
+          <button class="btn btn-success col-md-2" type="submit" value="search" id="sell">Sell</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  
   <br/>
   <h5 id="buy-message"></h5>
 </div>
+
+
+
 <script type="text/javascript">
   var askPrice = 0
   var stock_data = {{ stock_quote | safe }}
@@ -177,7 +214,6 @@
 
   $("#buy-submit-button").on("click", function(evt){
     let quantity = $("#quantity-input").val() * 1
-    
     $.ajax({ 
       url: "/buy_stocks",
       method: "POST",
@@ -186,14 +222,14 @@
         quantity: quantity,
         ask: stock_data.ask
       }),
-      dataType: "json",
-    }).then(data => {
-      if(data){
-        $("#buy-message").text("You have successfully completed your purchase!")
-      }
+      contentType: "application/json"
+    }).then(() => {
+      $("#buy-message").text("You have successfully completed your purchase!")
+    }).error(() => {
+      alert("This was an invalid transaction");
     })
   });
-
 </script>
+
 {% endblock %}
 

@@ -13,17 +13,11 @@
     background-attachment: fixed; 
 }
 
-h1 {
+h2 {
     text-decoration: overline #79d70f;
     letter-spacing: 2px;
     line-height: 2.5;
     margin-top: 20px;
-    font-weight: 700;
-}
-
-h2 {
-    letter-spacing: 3px;
-    line-height: 2;
     font-weight: 700;
 }
 

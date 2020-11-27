@@ -22,18 +22,10 @@
   <a class="navbar-brand" href="{% url 'home' %}" onMouseOver="this.style.color='white'" onMouseOut="this.style.color='#79d70f'">STK Portfolio Manager</a>
 
   <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
-    <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+    <ul class="navbar-nav ml-auto mt-2 mt-lg-0 ">
 
       <li class="nav-item">
-        <a class="nav-link" href="{% url 'explore' %}">Explore STKs</a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'portfolio' %}">Portfolio</a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'trade' %}">Trade</a>
+        <a class="nav-link" href="{% url 'trade' %}">Trade/Portfolio</a>
       </li>
 
       {% if user.is_authenticated %}
@@ -43,9 +35,7 @@
          <li class="nav-item">
             <a class="nav-link" href="{% url 'edit_profile' %}">Edit Profile</a>
         </li>
-        <!--<li class="nav-item">
-            <a class="nav-link" href="{% url 'change_password' %}">Change Password</a>
-        </li>-->
+
       {% else %}
         <li class="nav-item">
           <a class="nav-link" href="{% url 'register' %}">Registration</a>
@@ -57,10 +47,6 @@
       {% endif %}
 
      </ul>
-    <form class="form-inline my-2 my-lg-0">
-      <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-    </form>
   </div>
 </nav>
     <br/>

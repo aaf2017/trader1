@@ -8,16 +8,22 @@ body {
   background-color: #f2eee3;
 }
 
-h1 {
+h2 {
   text-decoration: overline #79d70f;
   letter-spacing: 2px;
-  line-height: 2.5;
+  line-height: 2;
   margin-top: 5px;
+  margin-bottom: 5px;;
   font-weight: 700;
 }
 
-h3 {
+h4 {
   text-decoration: overline #79d70f;
+  letter-spacing: 2px;
+  line-height: 0.5;
+  margin-top: 5px;
+  margin-bottom: 20px;
+  font-weight: 700;
 }
 
 .form-inlign {
@@ -31,10 +37,41 @@ th {
 .table {
   border-radius: 5px;
   width: 80%;
-  margin: 0px auto;
+  margin: 5px auto;
   float: none;
 }
 
+.form-control {
+  margin-right: 40px;
+  margin-left: 0px;
+  border-radius: 20px; 
+}
 
+.col-md-6 {
+  margin-left: 0px;
+  border-radius: 20px; 
+}
 
+#colFormLabel {
 
+  margin-left: 30px;
+}
+
+#searchTicker {
+  margin-left: -35px;
+  border-radius: 20px; 
+}
+
+#buy-submit-button, #sell {
+  border-radius: 20px;
+
+}
+
+#quantitySell {
+
+  margin-left: 60px;
+}
+
+img {
+  margin-left: 60px;
+}

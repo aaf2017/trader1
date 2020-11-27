@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('symbol', models.CharField(max_length=8)),
                 ('company_name', models.CharField(max_length=512)),
-                ('purchase_price', models.FloatField()),
+                #('purchase_price', models.FloatField()),
                 ('quantity', models.IntegerField()),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('last_modified', models.DateTimeField(auto_now=True)),

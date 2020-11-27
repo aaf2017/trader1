@@ -1,9 +1,12 @@
 import json
+#import matplotlib               #added after RuntimeError: main thread is not in main loop
 import matplotlib.pyplot as plt
 import yfinance as yf
 import pandas as pd
 import numpy as np
 import os
+import io
+import base64, urllib
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
@@ -18,12 +21,12 @@ from datetime import datetime
 from pandas_datareader import data
 from pandas_datareader._utils import RemoteDataError
 
-# Delete this comment
-from .models import Quote, Stock, Account
-from .forms import QuoteForm, SignUpForm, EditProfileForm
+# Delete this comment?
+from .models import Stock, Account
+from .forms import SignUpForm, EditProfileForm
 
-def getInfo( symbol):
-    STARTDATE = '2014-01-01'
+def get_stock_graph(symbol):
+    STARTDATE = '2020-01-01'
     ENDDATE = str( datetime.now().strftime('%Y-%m-%d'))
     company = yf.download( symbol, start=STARTDATE, end=ENDDATE)
     hist = company['Adj Close']
@@ -31,9 +34,12 @@ def getInfo( symbol):
     plt.xlabel("Date")
     plt.ylabel("Adjusted")
     plt.title( symbol + " Price Data")
-    #plt.show()
-    IMGDIR = os.path.join( settings.BASE_DIR, 'myapp\static')
-    plt.savefig( IMGDIR + '\my_plot.png')
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png")
+    buf.seek(0)
+    string = base64.b64encode(buf.read())
+    uri = urllib.parse.quote(string)
+    return uri
 
 def getStockInfo( request, symbol):
     #getInfo( symbol)
@@ -58,18 +64,31 @@ def home( request):
     }
         
     return render( request, 'myapp/home.html', context)
-    
-def explore(request):
-    return render(request, 'myapp/explore.html', {})
+
+def get_stock_info(stocks):
+    ret = []
+    for stock in stocks:
+        stock_quote = yf.Ticker(stock.symbol).info
+        sell_price = stock_quote["bid"]
+        ret.append({"symbol": stock.symbol, "company_name": stock.company_name, "quantity": stock.quantity, "value": sell_price * stock.quantity})
+    return ret
 
 @login_required
 @csrf_exempt
-def trade( request):
+def trade(request):
+    print('trade')
+    account = None
+    stocks = []
     if request.user.is_authenticated:
+        print('trade:authenticated')
         account = Account.objects.get(user=request.user)
+        all_stocks = Stock.objects.filter(account=account)
+        stocks = get_stock_info(all_stocks)
     if request.method == 'POST':
+        print('trade:POST')
         if request.POST.get('action') == "search":
             symbol = request.POST.get("symbol")
+            print('trade:POST symbol='+ symbol)
             stock_quote = yf.Ticker(symbol).info
             stock_quote=dict(
                 exDividendDate=stock_quote["exDividendDate"] if stock_quote["exDividendDate"] else "",
@@ -86,66 +105,61 @@ def trade( request):
                 regularMarketPrice=stock_quote["regularMarketPrice"],
                 dividendYield=stock_quote["dividendYield"] if stock_quote["dividendYield"] else "",
             )
-            return render( request, 'myapp/trade.html', {"stock_quote": stock_quote, "account": account})
-        if request.POST.get('action') == "buy":
-            pass
-    return render( request, 'myapp/trade.html', {"account": account})
+            graph = get_stock_graph(symbol)
+            return render( request, 'myapp/trade.html', {"stock_quote": stock_quote, "account": account, "stocks": stocks, "image": graph})
+        if request.POST.get('action') == "sell":
+            print('trade:POST action=sell')
+            quantity = int(request.POST.get("quantity"))
+            print('trade:POST quantity='+str(quantity))
+
+            symbol = request.POST.get("stock")
+            print('trade:POST symbol='+str(symbol))
+
+            if symbol == "":
+                return render( request, 'myapp/trade.html', {"account": account, "stocks": stocks})
+            stock = Stock.objects.get(account=account, symbol=symbol)
+            if quantity <= stock.quantity:   
+                print('trade:quantity='+str(quantity))
+                print('trade:stock.quantity='+str(stock.quantity))
+ 
+                stock_quote = yf.Ticker(symbol).info
+                sell_price = stock_quote["bid"]
+                cash = quantity * sell_price
+                account.balance += cash
+                account.save()
+                filtered_stock = Stock.objects.get(account=account, symbol=symbol)
+                filtered_stock.quantity -= quantity
+                filtered_stock.save()
+                stocks = get_stock_info(Stock.objects.filter(account=account))
+                print('rendering')
+            return render( request, 'myapp/trade.html', {"account": account, "stocks": stocks})
+    return render( request, 'myapp/trade.html', {"account": account, "stocks": stocks})
 
 @login_required
 @csrf_exempt
-def buy_stocks( request):
+def buy_stocks(request):
+    print(request.body)
     data = json.loads(request.body)
     account = Account.objects.get(user=request.user)
-    print(data["quantity"])
-    if account.balance > data["quantity"]*data["ask"]:    
-        company_name = yf.Ticker(data["symbol"]).info["longName"]
-        params = dict(symbol=data["symbol"], quantity=data['quantity'], purchase_price=data["ask"], account=account, company_name=company_name)
-        # make sure that the stock doesn't exist (by symbol and purchase price) and if it does just update the quantity
-        stock = Stock.objects.create(**params)
+    total_price = data["quantity"]*data["ask"]
+    if account.balance > total_price:  
+        stock = Stock.objects.filter(symbol=data["symbol"])  
+        if stock:
+            stock = stock[0]
+            stock.quantity += data["quantity"]
+            stock.save()
+        else:
+            company_name = yf.Ticker(data["symbol"]).info["longName"]
+            print(company_name)
+            # make sure that the stock doesn't exist (by symbol and purchase price) and if it does just update the quantity
+            stock = Stock.objects.create(symbol=data["symbol"], quantity=data['quantity'], account=account, company_name=company_name)
         # update the balance 
+        account.balance -= total_price
+        account.save()
         ret = {k:v for k,v in stock.__dict__.items() if k not in ["_state", "created", "last_modified"]}
         return JsonResponse(ret, status=200)
-    if account.balance < data["quantity"]*data["ask"]:
-        return 
-
-@login_required
-def portfolio( request):
-    try:
-        account = Account.objects.get(user=request.user)
-        stocks = Stock.objects.filter(account=account).order_by('symbol').all()
-        stock_symbols = stocks.values_list('symbol', flat=True)
-        stock_quotes = [yf.Ticker(symbol).info for symbol in stock_symbols]
-    except Account.DoesNotExist:
-        account = None
-        stocks = None     
-    return render(request, 'myapp/portfolio.html', {'account': account, 'stocks': stocks, 'stock_count': len(stocks) if stocks else 0})
-
-def quotes( request):
-    quotes = Quote.objects.all();
-    context = { 'quotes' : quotes}
-    return render(request, 'myapp/quotes.html', context)
-
-def quote( request):
-    print('method started')
-    if request.method == 'POST':
-        quoteForm = QuoteForm( request.POST)
-        if quoteForm.is_valid() == False:
-            return HttpResponse( quoteForm.errors)
-        quoteForm.save();
-        return redirect("/quotes");
-    elif request.method == 'GET':
-        quoteForm = QuoteForm()
-    context = { 'quoteForm' : quoteForm}
-    return render( request, 'myapp/quote.html', context)
-
-def getPrice(request):
-    data = json.loads(request.body)
-    print('getPrice: id=', data["name"])
-    ticker = yf.Ticker(data["name"])
-    print('getPrice2: ticker=', ticker)
-    retval = { "price" : ticker.info['regularMarketPrice']}
-    print('getPrice3')
-    return JsonResponse(retval)
+    else:
+        return JsonResponse(status=400)
 
 # USER AUTHENTIFICATION - LOGIN/LOGOUT
 
@@ -224,4 +238,5 @@ def change_password(request):
         
     context = {'form': form}
     return render( request, 'myapp/change_password.html', context)
+
     

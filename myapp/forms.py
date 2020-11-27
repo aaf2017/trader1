@@ -2,28 +2,6 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django import forms
 from django.contrib.auth.models import User
 from .models import Quote
-
-class QuoteForm( forms.ModelForm):
-    class Meta:
-        model = Quote
-        fields = ['stock_name', 'price', 'quantity']
-        widgets = {
-            'stock_name': forms.TextInput(
-                attrs={
-                    'id':'stock_name'
-                }
-            ),
-            'price': forms.TextInput(
-                attrs={
-                    'id':'price'
-                }
-            ),
-            'quantity': forms.TextInput(
-                attrs={
-                    'id':'quantity'
-                }
-            )
-        }
         
 """
 NEW USER REGISTRATION FORM
