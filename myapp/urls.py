@@ -13,7 +13,6 @@ urlpatterns = [
     path('register', views.register_user, name="register"),                     #localhost:8000/register ->views.register_user()
     path('edit_profile', views.edit_profile, name="edit_profile"),              #localhost:8000/edit_profile ->views.edit_profile()
     path('change_password', views.change_password, name="change_password"),     #localhost:8000/edit_profile ->views.edit_profile()
-    path('buy_stocks', views.buy_stocks, name="buy_stocks"),                    #localhost:8000/ ->views.trade()
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     
 

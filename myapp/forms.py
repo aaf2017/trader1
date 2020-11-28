@@ -1,12 +1,12 @@
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django import forms
 from django.contrib.auth.models import User
-from .models import Quote
+#from .models import Quote
         
-"""
-NEW USER REGISTRATION FORM
 
-"""
+# NEW USER REGISTRATION FORM
+
+
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Email Address'}),)
     first_name = forms.CharField(label="", max_length=100, widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'First Name'}),)
@@ -34,10 +34,9 @@ class SignUpForm(UserCreationForm):
         self.fields['password2'].label = ''
         self.fields['password2'].help_text = '<small class="form-text text-muted">Enter the same password as before, for verification.</small>'
 
-"""
-EDIT USER PROFILE
 
-"""
+# EDIT USER PROFILE
+
 
 class EditProfileForm(UserChangeForm):
     password = forms.CharField(label="", widget=forms.TextInput(attrs={'type':'hidden'}))

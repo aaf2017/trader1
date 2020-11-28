@@ -12,6 +12,9 @@
   <br/>
 
 <div class="text-center">
+  <!--<div class="inner text-center">
+    <h5 id="buy-message">{{ message }}</h5>
+  </div>-->
   <div class="row">
 
   <!--LEFT SIDE-->
@@ -34,18 +37,19 @@
         <input type="text" name="total" class="form-control mr-sm-4" id="total-price-input" placeholder="$ Total Price" disabled>          
       </div>   
       <br/>
-
-      <div class="form-inline col-md-6">
-        <input type="text" name="quantity" class="form-control mr-sm-3" id="quantity-input" placeholder="Enter Quantity">
-        <!--<input type="text" name="quantity" class="form-control col-md-6 offset-md-1" placeholder="Quantity">-->
-        <button class="btn btn-danger col-md-4" type="submit" id="buy-submit-button" aria-haspopup="true" aria-expanded="false">Buy</button>
-      </div>
+      
+      <form action="trade" method="POST">
+        {% csrf_token %}
+        <div class="form-inline col-md-6">
+          <input type="hidden" name="symbol" value="{{stock_quote.symbol}}">
+          <input type="hidden" name="action" value="buy">
+          <input type="text" name="quantity" class="form-control mr-sm-3" id="quantity-input" placeholder="Enter Quantity">
+          <!--<input type="text" name="quantity" class="form-control col-md-6 offset-md-1" placeholder="Quantity">-->
+          <button class="btn btn-danger col-md-4" type="submit" id="buy-submit-button" aria-haspopup="true" aria-expanded="false">Buy</button>
+        </div>
+      </form>
     </div>
     <br/>
-
-     <h5 id="buy-message"></h5>
-
-
       <div class="row">
         <div class="col-md-12">
         {% if stock_quote.symbol %}
@@ -198,7 +202,10 @@
 
   
   <br/>
-  <h5 id="buy-message"></h5>
+  <!--<h5 id="buy-message"></h5>-->
+  <div class="inner text-center">
+    <h5 id="buy-message">{{ message }}</h5>
+  </div>
 </div>
 
 
@@ -210,24 +217,6 @@
   $("#quantity-input").on("keyup", function(evt){
     let price = $("#quantity-input").val() * askPrice;
     $("#total-price-input").val(price); 
-  })
-
-  $("#buy-submit-button").on("click", function(evt){
-    let quantity = $("#quantity-input").val() * 1
-    $.ajax({ 
-      url: "/buy_stocks",
-      method: "POST",
-      data: JSON.stringify({
-        symbol: stock_data.symbol,
-        quantity: quantity,
-        ask: stock_data.ask
-      }),
-      contentType: "application/json"
-    }).then(() => {
-      $("#buy-message").text("You have successfully completed your purchase!")
-    }).error(() => {
-      alert("This was an invalid transaction");
-    })
   });
 </script>
 

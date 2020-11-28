@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 # Create your models here.
+
 class Quote( models.Model):
     stock_name = models.CharField( max_length=30)
     price = models.DecimalField( max_digits=8, decimal_places=2)
@@ -15,9 +16,9 @@ class Quote( models.Model):
 
 class Account(models.Model):
     
-    """
-    Account Object Specfication
-    """
+    
+    # Account Object Specfication
+    
     
     user=models.OneToOneField(User, on_delete=models.CASCADE)
     balance=models.FloatField(default=100000)
@@ -29,9 +30,9 @@ class Account(models.Model):
 
 class Stock(models.Model):
     
-    """
-    Stock Object Model Specification
-    """
+  
+    # Stock Object Model Specification
+   
     
     symbol=models.CharField(max_length=8)
     company_name=models.CharField(max_length=512)
@@ -41,4 +42,4 @@ class Stock(models.Model):
     account=models.ForeignKey(Account, on_delete=models.CASCADE)
     
     def __str__(self):
-        return f"{self.account.id}: {self.symbol} {self.company_name} @ {self.quantity}"
+        return f"{self.symbol} {self.company_name} @ {self.quantity} "

@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='account',
             name='balance',
-            field=models.FloatField(default=10000),
+            field=models.FloatField(default=100000),
         ),
     ]

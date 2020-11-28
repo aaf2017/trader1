@@ -21,7 +21,6 @@ from datetime import datetime
 from pandas_datareader import data
 from pandas_datareader._utils import RemoteDataError
 
-# Delete this comment?
 from .models import Stock, Account
 from .forms import SignUpForm, EditProfileForm
 
@@ -42,25 +41,25 @@ def get_stock_graph(symbol):
     return uri
 
 def getStockInfo( request, symbol):
-    #getInfo( symbol)
     return JsonResponse({"symbol": symbol })
 
-@login_required
 def home( request):
-    try:
+    if request.user.is_authenticated:
         account = Account.objects.get(user=request.user)
-        stocks = Stock.objects.filter(account=account).order_by('-created').all()
+        stocks = Stock.objects.filter(account=account).order_by('-created').all()[:5]
         stock_symbols = stocks.values_list('symbol', 'quantity')
         account_value = sum([yf.Ticker(stock[0]).info["ask"]*stock[1] for stock in stock_symbols])
-    except Account.DoesNotExist:
+        account_value += account.balance
+    else:
         account = None
-        stocks = None
+        stocks = []
+        account_value = 0
         
     context = {
         'account': account,
-        'stocks': stocks[:5],
+        'stocks': stocks,
         'stock_count': len(stocks) if stocks else 0,
-        'account_value': account_value + account.balance,
+        'account_value': account_value,
     }
         
     return render( request, 'myapp/home.html', context)
@@ -76,9 +75,9 @@ def get_stock_info(stocks):
 @login_required
 @csrf_exempt
 def trade(request):
-    print('trade')
     account = None
     stocks = []
+    message = ""
     if request.user.is_authenticated:
         print('trade:authenticated')
         account = Account.objects.get(user=request.user)
@@ -131,35 +130,33 @@ def trade(request):
                 filtered_stock.quantity -= quantity
                 filtered_stock.save()
                 stocks = get_stock_info(Stock.objects.filter(account=account))
-                print('rendering')
-            return render( request, 'myapp/trade.html', {"account": account, "stocks": stocks})
-    return render( request, 'myapp/trade.html', {"account": account, "stocks": stocks})
-
-@login_required
-@csrf_exempt
-def buy_stocks(request):
-    print(request.body)
-    data = json.loads(request.body)
-    account = Account.objects.get(user=request.user)
-    total_price = data["quantity"]*data["ask"]
-    if account.balance > total_price:  
-        stock = Stock.objects.filter(symbol=data["symbol"])  
-        if stock:
-            stock = stock[0]
-            stock.quantity += data["quantity"]
-            stock.save()
-        else:
-            company_name = yf.Ticker(data["symbol"]).info["longName"]
-            print(company_name)
-            # make sure that the stock doesn't exist (by symbol and purchase price) and if it does just update the quantity
-            stock = Stock.objects.create(symbol=data["symbol"], quantity=data['quantity'], account=account, company_name=company_name)
-        # update the balance 
-        account.balance -= total_price
-        account.save()
-        ret = {k:v for k,v in stock.__dict__.items() if k not in ["_state", "created", "last_modified"]}
-        return JsonResponse(ret, status=200)
-    else:
-        return JsonResponse(status=400)
+                message = "Succesfully sold stock"
+            else:
+                message = "That is more quantity than you have on your balance"
+        if request.POST.get('action') == "buy":
+            quantity = int(request.POST.get("quantity"))
+            symbol = request.POST.get("symbol")
+            account = Account.objects.get(user=request.user)
+            stock_quote = yf.Ticker(symbol).info
+            total_price = quantity*stock_quote["ask"]
+            if account.balance > total_price:  
+                stock = Stock.objects.filter(symbol=symbol, account=account)  
+                if stock:
+                    stock = stock[0]
+                    stock.quantity += quantity
+                    stock.save()
+                else:
+                    company_name = stock_quote["longName"]
+                    # make sure that the stock doesn't exist (by symbol and purchase price) and if it does just update the quantity
+                    stock = Stock.objects.create(symbol=symbol, quantity=quantity, account=account, company_name=company_name)
+                # update the balance 
+                account.balance -= total_price
+                account.save()
+                stocks = get_stock_info(Stock.objects.filter(account=account))
+                message = "Succesfully bought stock"
+            else:
+                message = "Insufficient funds for buying stock"
+    return render( request, 'myapp/trade.html', {"account": account, "stocks": stocks, "message": message})
 
 # USER AUTHENTIFICATION - LOGIN/LOGOUT
 
@@ -196,7 +193,7 @@ def register_user(request):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password1']
             user = authenticate(username=username, password=password)
-            Account.objects.create(user=user, balance=1000)
+            Account.objects.create(user=user, balance=100000)
             login(request, user)
             messages.success(request, ('You have successfully completed your registration!'))
             return redirect('home')

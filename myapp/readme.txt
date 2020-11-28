@@ -49,7 +49,7 @@ class Account(models.Model):
     """
     
     user=models.OneToOneField(User, on_delete=models.CASCADE)
-    balance=models.FloatField(default=1000)
+    balance=models.FloatField(default=100000)
     created=models.DateTimeField(auto_add_now=True)
     last_modified=models.DateTimeField(auto_now=True)
     
